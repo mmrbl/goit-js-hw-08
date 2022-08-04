@@ -5,15 +5,18 @@ const iframe = document.querySelector('#vimeo-player');
 const player = new Player(iframe);
 
 //записую в локальне сховище поточний час. throttle встановлює крок в 1 секунду
-const onPlay = throttle(function (data) {
-  localStorage.setItem('videoplayer-current-time', data.seconds);
-}, 1000);
 
-//розпарсив час, який записався у стрічках 9-10
-const currentTime = JSON.parse(
-  localStorage.getItem('videoplayer-current-time')
-);
-//
-player.setCurrentTime(currentTime);
+let secondCounter;
 
-player.on('timeupdate', onPlay);
+player.on('timeupdate', throttle(onPlay, 1000));
+
+function onPlay(data) {
+  secondCounter = data.seconds;
+  localStorage.setItem('videoplayer-current-time', secondCounter);
+}
+
+const currentTime = localStorage.getItem('videoplayer-current-time');
+
+if (currentTime) {
+  player.setCurrentTime(currentTime);
+}
