@@ -36,8 +36,18 @@ function fromStorageToForm(keys, dataLocalStorage) {
 
 function onFormSubmit(evt) {
   evt.preventDefault();
+  if (formData.email === undefined || formData.message === undefined) {
+    return alert('Напиши хоть шось в кожному полі');
+  } else if (formData.email === ' ' || formData.message === ' ') {
+    return alert('Напиши хоть шось в кожному полі');
+  }
   evt.target.reset();
   localStorage.removeItem(STORAGE_KEY);
+
+  console.log(formData);
+
+  delete formData.email;
+  delete formData.message;
 }
 
 // Під час завантаження сторінки перевіряй стан сховища, і якщо там є збережені дані, заповнюй ними поля форми
