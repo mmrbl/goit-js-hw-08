@@ -1,44 +1,45 @@
-const throttle = require('lodash.throttle');
+import throttle from 'lodash.throttle';
 
 const refs = {
-  form: document.querySelector('.feedback-form'),
-  email: document.querySelector('.feedback-form input'),
-  message: document.querySelector('.feedback-form textarea'),
+  email: document.querySelector('.feedback-form [name="email"]'),
+  message: document.querySelector('.feedback-form [name="message"]'),
 };
 
-refs.form.addEventListener('submit', onFormSubmit);
-refs.email.addEventListener('input', throttle(onEmailInput, 500));
-refs.message.addEventListener('input', throttle(onMessageInput, 500));
+// Відстежуй на формі подію input
+const form = document.querySelector('.feedback-form');
+form.addEventListener('input', throttle(textInput, 500));
+form.addEventListener('submit', onFormSubmit);
 
-let storageKey = 'feedback-form-state';
+let STORAGE_KEY = 'feedback-form-state';
 
-populateTextArea();
+//об'єкт для збереження введеної інформації в полях
+const formData = {};
 
-function onEmailInput(evt) {
-  storageKey = 'email';
-  const email = evt.currentTarget.value;
-  localStorage.setItem(storageKey, email);
-  // console.log(email);
+function textInput(evt) {
+  // змінює  об'єкт введеої інформації
+  formData[evt.target.name] = evt.target.value;
+  // створює локальне сховище для введених даних
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 }
 
-function onMessageInput(evt) {
-  storageKey = 'message';
-  const message = evt.currentTarget.value;
-  localStorage.setItem(storageKey, message);
+function fromStorageToForm(keys, dataLocalStorage) {
+  for (const key of keys) {
+    formData[key] = dataLocalStorage[key];
+    refs[key].value = dataLocalStorage[key];
+  }
 }
+
+//анулює введені дані при
 
 function onFormSubmit(evt) {
   evt.preventDefault();
-
-  evt.currentTarget.reset();
-  localStorage.removeItem('email');
-  localStorage.removeItem('message');
+  evt.target.reset();
+  localStorage.removeItem(STORAGE_KEY);
 }
 
-function populateTextArea() {
-  const savedMessage = localStorage.getItem(storageKey);
-  if (savedMessage) {
-    // console.log(savedMessage);
-    refs.email.value = savedMessage;
-  }
+if (localStorage.getItem(STORAGE_KEY)) {
+  const parsedLocalStorage = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  const keys = Object.keys(parsedLocalStorage);
+
+  fromStorageToForm(keys, parsedLocalStorage);
 }
